@@ -22,6 +22,7 @@ DHT dht(DHTPIN, DHTTYPE);
 const byte led_pin = 2;
 int brightness = 0;
 int fade_rate = 5;
+int light_show = 0;
 
 String readDHTTemperature() {
   // Read temperature as Fahrenheit (isFahrenheit = true)
@@ -60,9 +61,20 @@ const char sensors_html[] PROGMEM = R"rawliteral(
      font-family: Arial;
      display: inline-block;
      margin: 0px auto;
-     text-align: center;
+     
     }
-    h2 { font-size: 3.0rem; }
+    h2 { 
+      font-size: 3.0rem;
+      text-align: center;
+    }
+    h3 {
+      font-size: 2.5rem;
+      text-align: left;
+    }
+    h4 {
+      font-size: 2rem;
+      text-align: left;
+    }
     p { font-size: 3.0rem; }
     .units { font-size: 1.2rem; }
     .dht-labels{
@@ -74,177 +86,86 @@ const char sensors_html[] PROGMEM = R"rawliteral(
 </head>
 <body>
   <h2>Imani's IOT Project</h2>
-  <p>
-    Sensors
-    <i class="fas fa-thermometer-half" style="color:#059e8a;"></i> 
-    <span class="dht-labels">Temperature</span> 
-    <span id="temperature">%TEMPERATURE%</span>
-    <sup class="units">&deg;C</sup>
-  </p>
-  <p>
-    <i class="fas fa-tint" style="color:#00add6;"></i> 
-    <span class="dht-labels">Humidity</span>
-    <span id="humidity">%HUMIDITY%</span>
-    <sup class="units">&percnt;</sup>
-  </p>
+
+  <div class = "About">  
+    <h3> About </h3>
+  </div>
+
+  <div class = "Sensors">
+    <h3> Sensors </h3>
+    <h4> DHT </h4>
+    <p>
+      <i class="fas fa-thermometer-half" style="color:#059e8a;"></i> 
+      <span class="dht-labels">Temperature</span> 
+      <span id="temperature">%TEMPERATURE%</span>
+      <sup class="units">&deg;C</sup>
+    </p>
+    <p>
+      <i class="fas fa-tint" style="color:#00add6;"></i> 
+      <span class="dht-labels">Humidity</span>
+      <span id="humidity">%HUMIDITY%</span>
+      <sup class="units">&percnt;</sup>
+    </p>
+  </div>
   
-  <button onclick = "go_home()"> Home </button>   
-  <button onclick = "go_sensors()"> Home </button>   
-  <button onclick = "go_about()"> Home </button> 
-  <button onclick = "go_actuators()"> Home </button> 
+  <div class = "Actuators">    
+    <h3> Actuators </h3>
+    <h4> Current Light show </h4>
+    <span id="light_show"> Choose a Light Show </span>
+    <button onclick = "light_show_1()"> Light Show 1 </button>  
+    <button onclick = "light_show_2()"> Light Show 2 </button>  
+  </div>
+
 </body>
 <script>
-setInterval(function ( ) {
-  var xhttp = new XMLHttpRequest();
-  xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
-      document.getElementById("temperature").innerHTML = this.responseText;
-    }
-  };
-  xhttp.open("GET", "/temperature", true);
-  xhttp.send();
-}, 10000 ) ;
-
-setInterval(function ( ) {
-  var xhttp = new XMLHttpRequest();
-  xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
-      document.getElementById("humidity").innerHTML = this.responseText;
-    }
-  };
-  xhttp.open("GET", "/humidity", true);
-  xhttp.send();
-}, 10000 ) ;
-</script>
-</html>)rawliteral";
-
-const char about_html[] PROGMEM = R"rawliteral(
-<!DOCTYPE HTML><html>
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-  <style>
-    html {
-     font-family: Arial;
-     display: inline-block;
-     margin: 0px auto;
-     text-align: center;
-    }
-    h2 { font-size: 3.0rem; }
-    p { font-size: 3.0rem; }
-    .units { font-size: 1.2rem; }
-    .dht-labels{
-      font-size: 1.5rem;
-      vertical-align:middle;
-      padding-bottom: 15px;
-    }
-  </style>
-</head>
-<body>
-  <h2>Imani's IOT Project</h2>
-  <p>About</p>
-  <p>
-    Iot project using the ESP32 as an edge device and server
-  </p>
-  
-  <button onclick = "go_home()"> Home </button>   
-  <button onclick = "go_sensors()"> Home </button>   
-  <button onclick = "go_about()"> Home </button> 
-  <button onclick = "go_actuators()"> Home </button> 
-</body>
-<script>
-
-</script>
-</html>)rawliteral";
-
-const char index_html[] PROGMEM = R"rawliteral(
-<!DOCTYPE HTML><html>
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-  <style>
-    html {
-     font-family: Arial;
-     display: inline-block;
-     margin: 0px auto;
-     text-align: center;
-    }
-    h2 { font-size: 3.0rem; }
-    p { font-size: 3.0rem; }
-    .units { font-size: 1.2rem; }
-    .dht-labels{
-      font-size: 1.5rem;
-      vertical-align:middle;
-      padding-bottom: 15px;
-    }
-  </style>
-</head>
-<body>
-  <h2>Imani's IOT Project</h2>
-  <p>Home</p>
-  <button onclick = "go_home()"> Home </button>   
-  <button onclick = "go_sensors()"> Home </button>   
-  <button onclick = "go_about()"> Home </button> 
-  <button onclick = "go_actuators()"> Home </button> 
-</body>
-<script>
-    var addy = '';
+  var 
+  function light_show_1(){
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-            addy = this.responseText;
+          if (this.responseText == "Success"){
+            document.getElementById("light_show").innerHTML = this.responseText;
+          }
         }
     };
-    xhttp.open("GET", "/address", true);
+    xhttp.open("GET", "/light_show_1", true);
     xhttp.send();
-    function go_home() {
-        window.location.href = addy +'/home';
-    }
-    function go_sensors() {
-        window.location.href = addy +'/sensors';
-    }
-    function go_about() {
-        window.location.href = addy +'/about';
-    }
-    function go_actuators() {
-        window.location.href = addy +'/actuators';
-    }
-</script>
-</html>)rawliteral";
+  }
 
-const char actuators_html[] PROGMEM = R"rawliteral(
-<!DOCTYPE HTML><html>
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-  <style>
-    html {
-     font-family: Arial;
-     display: inline-block;
-     margin: 0px auto;
-     text-align: center;
-    }
-    h2 { font-size: 3.0rem; }
-    p { font-size: 3.0rem; }
-    .units { font-size: 1.2rem; }
-    .dht-labels{
-      font-size: 1.5rem;
-      vertical-align:middle;
-      padding-bottom: 15px;
-    }
-  </style>
-</head>
-<body>
-  <h2>Imani's IOT Project</h2>
-  <p>Actuators</p>
-
+  function light_show_2(){
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          if (this.responseText == "Success"){
+            document.getElementById("light_show").innerHTML = this.responseText;
+          }
+        }
+    };
+    xhttp.open("GET", "/light_show_2", true);
+    xhttp.send();
+  }
   
-  <button onclick = "go_home()"> Home </button>   
-  <button onclick = "go_sensors()"> Home </button>   
-  <button onclick = "go_about()"> Home </button> 
-  <button onclick = "go_actuators()"> Home </button> 
-</body>
-<script>
+  setInterval(function ( ) {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+      if (this.readyState == 4 && this.status == 200) {
+        document.getElementById("temperature").innerHTML = this.responseText;
+      }
+    };
+    xhttp.open("GET", "/temperature", true);
+    xhttp.send();
+  }, 10000 ) ;
+
+  setInterval(function ( ) {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+      if (this.readyState == 4 && this.status == 200) {
+        document.getElementById("humidity").innerHTML = this.responseText;
+      }
+    };
+    xhttp.open("GET", "/humidity", true);
+    xhttp.send();
+  }, 10000 ) ;
 
 </script>
 </html>)rawliteral";
@@ -302,23 +223,75 @@ void setup(){
     server.on("/humidity", HTTP_GET, [](AsyncWebServerRequest *request){
         request->send_P(200, "text/plain", readDHTHumidity().c_str());
     });
+    server.on("/light_show_1", HTTP_GET, [](AsyncWebServerRequest *request){
+        if (light_show_1() == 1){          
+          request->send_P(200, "text/plain", "Success");
+        }
+        else {          
+          request->send_P(200, "text/plain", "Failed");
+        }
+    });
+    server.on("/light_show_2", HTTP_GET, [](AsyncWebServerRequest *request){
+        if (light_show_2() == 1){          
+          request->send_P(200, "text/plain", "Success");
+        }
+        else {          
+          request->send_P(200, "text/plain", "Failed");
+        }
+        request->send_P(200, "text/plain", "Light Show 2");
+    });
 
     // Start server
     server.begin();
 }
 
+int light_show_1(){
+  //turn to light show 1
+  Serial.println("Switched to Light show 1");
+  light_show = 1;
+  return 1;
+}
+
+int light_show_2(){
+  //turn to light show 2  
+  light_show = 2;
+  Serial.println("Switched to Light show 2");
+  return 1;
+}
+
 void breathe(){
-  // Light Show
+  // Light Show 0
   ledcWrite(0,brightness);
   brightness = brightness + fade_rate;
   if (brightness >= 255 || brightness <= 0) {
     fade_rate = -fade_rate;
-    Serial.print("Find me here: ");
-    Serial.println(WiFi.localIP());
   }
 }
+
+void blink(){
+  //Light Show 1
+  ledcWrite(0,brightness);
+  brightness = brightness + fade_rate*10;
+  if (brightness >= 255 || brightness <= 0) {
+    fade_rate = -fade_rate;
+  }
+}
+
+void pulse(){
+  //Light show 2
+  ledcWrite(0,brightness);
+  brightness = brightness + fade_rate*5;
+  if (brightness >= 255 || brightness <= 0) {
+    fade_rate = -fade_rate;
+  }
+}
+
 void loop(){
   // Light Show
-  breathe();
+  if (light_show == 0){breathe();}
+  else if (light_show == 1){blink();}
+  else{pulse();}
+  Serial.print("Find me here: ");
+  Serial.println(WiFi.localIP());
   delay(50);
 }
