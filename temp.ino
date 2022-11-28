@@ -51,7 +51,7 @@ String readDHTHumidity() {
   }
 }
 
-const char sensors_html[] PROGMEM = R"rawliteral(
+const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE HTML><html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -69,7 +69,7 @@ const char sensors_html[] PROGMEM = R"rawliteral(
     }
     h3 {
       font-size: 2.5rem;
-      text-align: left;
+      text-align: center;
     }
     h4 {
       font-size: 2rem;
@@ -110,16 +110,20 @@ const char sensors_html[] PROGMEM = R"rawliteral(
   
   <div class = "Actuators">    
     <h3> Actuators </h3>
-    <h4> Current Light show </h4>
+
+    <h4> Light show </h4>
     <span id="light_show"> Choose a Light Show </span>
-    <button onclick = "light_show_1()"> Light Show 1 </button>  
-    <button onclick = "light_show_2()"> Light Show 2 </button>  
+    <button onclick = "light_show()"> Switch Light Show </button>  
+
+    <h4> Fan </h4>
+    <span id="motor"> Choose a Fan setting </span>
+    <button onclick = "motor_show()"> Change Fan setting </button>  
+
   </div>
 
 </body>
-<script>
-  var 
-  function light_show_1(){
+<script>  
+  function light_show(){
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
@@ -132,19 +136,6 @@ const char sensors_html[] PROGMEM = R"rawliteral(
     xhttp.send();
   }
 
-  function light_show_2(){
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-          if (this.responseText == "Success"){
-            document.getElementById("light_show").innerHTML = this.responseText;
-          }
-        }
-    };
-    xhttp.open("GET", "/light_show_2", true);
-    xhttp.send();
-  }
-  
   setInterval(function ( ) {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
@@ -182,17 +173,17 @@ String processor(const String& var){
   return String();
 }
 
-void setup(){
-// Setup LEDs
+void setup() {
+  // Setup LEDs
     ledcAttachPin (led_pin, 0);
     ledcSetup (0,5000,8);
 
-// Serial port for debugging purposes
+  // Serial port for debugging purposes
     Serial.begin(115200);
 
     dht.begin();
 
-// Connect to Wi-Fi
+  // Connect to Wi-Fi
     WiFi.begin(ssid, password);
     while (WiFi.status() != WL_CONNECTED) {
         delay(1000);
@@ -201,21 +192,11 @@ void setup(){
     Serial.print("We're in boys... find me at ");
     Serial.println(WiFi.localIP());
 
-// SERVER FUNCTIONALITY
+  // SERVER FUNCTIONALITY
     //PAGES
     server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
         request->send_P(200, "text/html", index_html, processor);
     });
-    server.on("/about", HTTP_GET, [](AsyncWebServerRequest *request){
-        request->send_P(200, "text/html", about_html, processor);
-    });
-    server.on("/sensors", HTTP_GET, [](AsyncWebServerRequest *request){
-        request->send_P(200, "text/html", sensors_html, processor);
-    });
-    server.on("/actuators", HTTP_GET, [](AsyncWebServerRequest *request){
-        request->send_P(200, "text/html", actuators_html, processor);
-    });
-
     // FEATURES
     server.on("/temperature", HTTP_GET, [](AsyncWebServerRequest *request){
         request->send_P(200, "text/plain", readDHTTemperature().c_str());
@@ -224,20 +205,11 @@ void setup(){
         request->send_P(200, "text/plain", readDHTHumidity().c_str());
     });
     server.on("/light_show_1", HTTP_GET, [](AsyncWebServerRequest *request){
-        if (light_show_1() == 1){          
-          request->send_P(200, "text/plain", "Success");
-        }
-        else {          
-          request->send_P(200, "text/plain", "Failed");
-        }
+        //light_show_1();     
+        request->send_P(200, "text/plain", "Light Show 1");
     });
     server.on("/light_show_2", HTTP_GET, [](AsyncWebServerRequest *request){
-        if (light_show_2() == 1){          
-          request->send_P(200, "text/plain", "Success");
-        }
-        else {          
-          request->send_P(200, "text/plain", "Failed");
-        }
+        //light_show_2();
         request->send_P(200, "text/plain", "Light Show 2");
     });
 
@@ -291,7 +263,5 @@ void loop(){
   if (light_show == 0){breathe();}
   else if (light_show == 1){blink();}
   else{pulse();}
-  Serial.print("Find me here: ");
-  Serial.println(WiFi.localIP());
   delay(50);
 }
