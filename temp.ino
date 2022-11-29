@@ -62,6 +62,8 @@ int light_show = 0;
 //Switch Light shows
 String light_show_switch(){  
   Serial.println("Switch Light show");
+  brightness = 0;
+  fade_rate = 5;
   light_show += 1;
   if (light_show >2){
     //Only 3 light shows (including 0)
@@ -83,7 +85,6 @@ void breathe(){
     fade_rate = -fade_rate;
   }
 }
-
 //Light Show 1
 void blink(){
   ledcWrite(0,brightness);
@@ -92,7 +93,6 @@ void blink(){
     fade_rate = -fade_rate;
   }
 }
-
 //Light show 2
 void pulse(){
   ledcWrite(0,brightness);
@@ -138,17 +138,15 @@ String motor_speed(int speed){
       spr = -spr;
     }
 
-    //error when speed = 0, so just have it at 1
-    if (dc_speed == 0){
-      dc_speed = 1;
-    }
-
     //Speed Limit
     if (dc_speed >= max_dc_speed) {
       dc_speed = max_dc_speed;
     }
   } 
-  dc_motor.setSpeed(abs(dc_speed));
+  if (dc_speed != 0) {
+   dc_motor.setSpeed(abs(dc_speed));
+  }
+
   Serial.printf("motor_speed -> Current Speed: %d\n",dc_speed);
   char ret[256];
   itoa(dc_speed,ret,10);
@@ -176,16 +174,11 @@ const char index_html[] PROGMEM = R"rawliteral(
       text-align: center;
     }
     h4 {
-      font-size: 2rem;
+      font-size: 1rem;
       text-align: left;
     }
     p { font-size: 3.0rem; }
     .units { font-size: 1.2rem; }
-    .dht-labels{
-      font-size: 1.5rem;
-      vertical-align:middle;
-      padding-bottom: 15px;
-    }
   </style>
 </head>
 <body>
@@ -197,17 +190,12 @@ const char index_html[] PROGMEM = R"rawliteral(
 
   <div class = "Sensors">
     <h3> Sensors </h3>
-    <h4> DHT </h4>
-    <p>
-      <i class="fas fa-thermometer-half" style="color:#059e8a;"></i> 
-      <span class="dht-labels">Temperature</span> 
-      <span id="temperature">%TEMPERATURE%</span>
-      <sup class="units">&deg;C</sup>
-    </p>
-    <p>
-      <i class="fas fa-tint" style="color:#00add6;"></i> 
-      <span class="dht-labels">Humidity</span>
-      <span id="humidity">%HUMIDITY%</span>
+    <h4> Temperature </h4>
+    <span id="temperature">%TEMPERATURE%</span>
+    <sup class="units">&deg;C</sup>
+    
+    <h4> Humidity </h4>
+    <span id="humidity">%HUMIDITY%</span>
       <sup class="units">&percnt;</sup>
     </p>
   </div>
@@ -216,11 +204,11 @@ const char index_html[] PROGMEM = R"rawliteral(
     <h3> Actuators </h3>
 
     <h4> Light show </h4>
-    <span id="light_show"> Choose a Light Show </span>
+    <span id="light_show"> %Choose a Light Show% </span>
     <button onclick = "handler(0)"> Switch Light Show </button>  
 
     <h4> Fan </h4>
-    <span id="motor"> Choose a Fan setting </span>
+    <span id="motor"> %Motor Speed% </span>
     <button onclick = "handler(1)"> Speed up Fan </button>  
     <button onclick = "handler(2)"> Slow down Fan </button>  
   </div>
@@ -233,9 +221,7 @@ const char index_html[] PROGMEM = R"rawliteral(
       var xhttp = new XMLHttpRequest();
       xhttp.onreadystatechange = function() {
           if (this.readyState == 4 && this.status == 200) {
-            if (this.responseText == "Success"){
-              document.getElementById("light_show").innerHTML = this.responseText;
-            }
+            document.getElementById("light_show").innerHTML = "Light Show " +this.responseText;
           }
       };
       xhttp.open("GET", "/light_show", true);
@@ -246,8 +232,9 @@ const char index_html[] PROGMEM = R"rawliteral(
       var xhttp = new XMLHttpRequest();
       xhttp.onreadystatechange = function() {
           if (this.readyState == 4 && this.status == 200) {
-            if (this.responseText == "Success"){
-              document.getElementById("motor").innerHTML = this.responseText;
+            document.getElementById("motor").innerHTML = "Motor Speed " + this.responseText;
+            if (this.responseText == "15") {
+              alert("Motor has reached max speed");
             }
           }
       };
@@ -259,8 +246,9 @@ const char index_html[] PROGMEM = R"rawliteral(
       var xhttp = new XMLHttpRequest();
       xhttp.onreadystatechange = function() {
           if (this.readyState == 4 && this.status == 200) {
-            if (this.responseText == "Success"){
-              document.getElementById("motor").innerHTML = this.responseText;
+            document.getElementById("motor").innerHTML = "Motor Speed " + this.responseText;
+            if (this.responseText == "-15") {
+              alert("Motor has reached max speed");
             }
           }
       };
@@ -345,10 +333,10 @@ void setup() {
         request->send_P(200, "text/plain", light_show_switch().c_str());
     });
     server.on("/motor_slow", HTTP_GET, [](AsyncWebServerRequest *request){
-        request->send_P(200, "text/plain", motor_speed(-5).c_str());
+        request->send_P(200, "text/plain", motor_speed(-1).c_str());
     });
     server.on("/motor_speed", HTTP_GET, [](AsyncWebServerRequest *request){
-        request->send_P(200, "text/plain", motor_speed(5).c_str());
+        request->send_P(200, "text/plain", motor_speed(1).c_str());
     });
 
     // Start server
@@ -364,6 +352,7 @@ void loop(){
   else{pulse();}
 
   //Motor 
-  dc_motor.step(spr);
+  if (dc_speed != 0){dc_motor.step(spr);}
+
   delay(25);
 }
