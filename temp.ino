@@ -224,7 +224,7 @@ const char index_html[] PROGMEM = R"rawliteral(
   <h2>Smart Systems</h2>
   <div class = "About">  
     <h3> About </h3>
-    <p>Implement a smart system (mini smart home). Utilize sensor(s) and actuator(s) and access/ control system elements remotely via client/ server architecture.</p>
+    <h4>Implement a smart system (mini smart home). Utilize sensor(s) and actuator(s) and access/ control system elements remotely via client/ server architecture.</h4>
   </div>
   <div class = "Sensors">
     <h3> Sensors </h3>
@@ -239,10 +239,10 @@ const char index_html[] PROGMEM = R"rawliteral(
   </div>
   <div class = "Actuators">    
     <h3> Actuators </h3>
-    <h4> Light show </h4>
+    <h4> Lights </h4>
     <span id="light_show"> %Choose a Light Show% </span>
     <button onclick = "handler(0)"> Switch Light Show </button>  
-    <h4> Fan </h4>
+    <h4> Motor </h4>
     <span id="motor"> %Motor Speed% </span>
     <button onclick = "handler(1)"> Speed up Fan </button>  
     <button onclick = "handler(2)"> Slow down Fan </button>  
