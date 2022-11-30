@@ -1,4 +1,43 @@
 //Imani Muhammad-Graham
+//Project Purpose
+/*  
+  Implement a smart system (mini smart home).
+  Utilize sensor(s) and actuator(s) and access/ control system elements remotely via client/ server architecture.
+*/
+//Features
+/*
+  A website allowing:
+    Remote Temperature and Humidity sensing
+    Motor speed and direction control
+    LED blink pattern control
+*/
+//Functions/ Modules
+/*
+  String readDHTTemperature() -> Get temperature value from DHT, return as string
+
+  String readDHTHumidity() -> Get Humidity Value from DHT, return as string
+
+  light_show_switch() -> Increment light blinking pattern based on 'int light_show'    
+  return current 'int light_show' as string 
+    Different light blinking pattern functions selected by light_show_switch() that uses 'int brightness' and 'int fade_rate'
+    breathe()
+    blink()
+    pulse()
+
+  motor_speed(int speed) -> Takes in speed value, and adds it to 'int dc_speed' until abs(dc_speed) == 'max_dc_speed'. 
+  Toggles 'int spr' (steps per revolution) to reflect cw & ccw rotations.
+  Returns 'int dc_speed' as string  
+  
+*/
+//Sources
+/*
+  https://randomnerdtutorials.com/esp32-dht11-dht22-temperature-humidity-web-server-arduino-ide/
+    How to utilize ESPAsyncWebServer
+    Setting up DHT
+  https://randomnerdtutorials.com/esp32-stepper-motor-28byj-48-uln2003/
+    Setting up Stepper motor
+*/
+
 
 #include <DNSServer.h>
 
@@ -182,12 +221,11 @@ const char index_html[] PROGMEM = R"rawliteral(
   </style>
 </head>
 <body>
-  <h2>Imani's IOT Project</h2>
-
+  <h2>Smart Systems</h2>
   <div class = "About">  
     <h3> About </h3>
+    <p>Implement a smart system (mini smart home). Utilize sensor(s) and actuator(s) and access/ control system elements remotely via client/ server architecture.</p>
   </div>
-
   <div class = "Sensors">
     <h3> Sensors </h3>
     <h4> Temperature </h4>
@@ -199,20 +237,16 @@ const char index_html[] PROGMEM = R"rawliteral(
       <sup class="units">&percnt;</sup>
     </p>
   </div>
-  
   <div class = "Actuators">    
     <h3> Actuators </h3>
-
     <h4> Light show </h4>
     <span id="light_show"> %Choose a Light Show% </span>
     <button onclick = "handler(0)"> Switch Light Show </button>  
-
     <h4> Fan </h4>
     <span id="motor"> %Motor Speed% </span>
     <button onclick = "handler(1)"> Speed up Fan </button>  
     <button onclick = "handler(2)"> Slow down Fan </button>  
   </div>
-
 </body>
 <script>  
   function handler(n){
@@ -259,7 +293,6 @@ const char index_html[] PROGMEM = R"rawliteral(
       alert("Incorrect Input")
     }
   }
-
   setInterval(function ( ) {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
@@ -270,7 +303,6 @@ const char index_html[] PROGMEM = R"rawliteral(
     xhttp.open("GET", "/temperature", true);
     xhttp.send();
   }, 10000 ) ;
-
   setInterval(function ( ) {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
@@ -281,7 +313,6 @@ const char index_html[] PROGMEM = R"rawliteral(
     xhttp.open("GET", "/humidity", true);
     xhttp.send();
   }, 10000 ) ;
-
 </script>
 </html>)rawliteral";
 
@@ -301,12 +332,10 @@ void setup() {
   // Setup LEDs
     ledcAttachPin (led_pin, 0);
     ledcSetup (0,5000,8);
-
   // Serial port for debugging purposes
     Serial.begin(115200);
   //Set up Sensors
     dht.begin();
-
   // Connect to Wi-Fi
     WiFi.begin(ssid, password);
     while (WiFi.status() != WL_CONNECTED) {
@@ -315,7 +344,6 @@ void setup() {
     }
     Serial.print("We're in boys... find me at ");
     Serial.println(WiFi.localIP());
-  
   // SERVER FUNCTIONALITY
     //PAGES
     server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
@@ -329,7 +357,6 @@ void setup() {
         request->send_P(200, "text/plain", readDHTHumidity().c_str());
     });
     server.on("/light_show", HTTP_GET, [](AsyncWebServerRequest *request){
-             
         request->send_P(200, "text/plain", light_show_switch().c_str());
     });
     server.on("/motor_slow", HTTP_GET, [](AsyncWebServerRequest *request){
@@ -338,12 +365,9 @@ void setup() {
     server.on("/motor_speed", HTTP_GET, [](AsyncWebServerRequest *request){
         request->send_P(200, "text/plain", motor_speed(1).c_str());
     });
-
     // Start server
     server.begin();
 }
-
-
 
 void loop(){
   // Light Show
